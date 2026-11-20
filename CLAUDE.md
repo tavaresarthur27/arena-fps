@@ -1,0 +1,76 @@
+# Arena FPS
+
+Jogo de tiro em primeira pessoa 3D para navegador. Sobreviva a ondas de soldados inimigos, ganhe dinheiro e compre armas na loja.
+
+## Arquivos
+- `index.html`: estrutura da página, HUD, menus e loja. Carrega o three.js (r128) por CDN.
+- `style.css`: estilos do HUD, controles de toque, menu e loja.
+- `assets/`: modelos e animações 3D dos soldados (`LICENCA.txt` com os créditos). `assets/origem/` guarda os arquivos brutos baixados pelo usuário (não são carregados pelo jogo). `assets/ferramentas/`: scripts de conversão.
+- `game.js`: todo o jogo, em um único bloco, dividido por seções `// ---------- nome ----------`:
+  cena, estado, armas, som, inimigos, jogador, atualização, entrada (teclado/mouse e toque), menu e laço.
+
+## Como rodar
+Rode `python3 -m http.server 8000` e acesse http://localhost:8000 (precisa de internet para o three.js). Abrindo o `index.html` direto (file://), o modelo 3D dos soldados não carrega e o jogo usa o soldado procedural.
+
+## Regras do projeto
+- Responda e escreva textos do jogo em português do Brasil.
+- Mantenha o jogo responsivo: desktop (WASD, mouse) e celular (joystick e botões de toque).
+- Sem build e sem dependências além do three.js r128 e dos addons oficiais dele (`examples/js` da mesma versão, via jsDelivr). Não use módulos ES.
+
+## Gráficos
+- Céu físico `THREE.Sky` também gera a luz ambiente/reflexos (`scene.environment` via PMREM). Sol `DirectionalLight` na mesma direção (`SUN`).
+- Desktop: pós-processamento (`PP`) em HDR half-float → UnrealBloom leve → shader `grade` (tonemapping ACES, sRGB, cor, vinheta, grão) → FXAA. Com `PP` o renderer fica sem tonemapping/sRGB, senão é aplicado duas vezes. `?pp=0` na URL desliga.
+- Celular: sem pós-processamento; o renderer faz ACES + sRGB (exposição .3).
+- Texturas procedurais em canvas com mapa normal gerado da própria imagem (`mat()`, `normalOf()`); `fitUV()` repete a textura por tamanho da caixa sem esticar.
+- Ao ajustar brilho, mexa em `exposure` do `grade` e em `toneMappingExposure` juntos.
+- O disco do sol do Sky é desligado (`uDisk`=0) enquanto o PMREM é gerado; senão a luz ambiente fica forte demais.
+- Materiais escuros (armas, luvas, soldados) usam `envMapIntensity` baixo (.12–.3): com o céu como ambiente, valores altos deixam tudo cinza-claro.
+- Arma em primeira pessoa: `makeGun(w,par)` monta peça por peça com geometrias compartilhadas (`BOX`, `CYL`, `SPH`) e materiais `GM`. Ela devolve o carregador (some na recarga) e a posição da boca do cano. O soldado inimigo usa a mesma função (AK, escala .85).
+- Armas 3D: seção "armas 3D" em `game.js`. A tabela `MDL` (id da arma em `WP` → arquivo em `assets/armas/`) define `len` (comprimento em m), `back` (z do fundo), `gF`/`fF` (cabo e apoio como fração do comprimento), `flip` (modelo de frente para trás), `tint` (cor para FBX sem textura), `drop` (regex de peças fora do lugar) e `pistol`. `loadWeapons()` carrega tudo e `prepWeapon()` normaliza para o padrão do `makeGun`, que passa a usar o modelo quando ele existe; a mão segue `grip`/`fore`. O fuzil do inimigo continua procedural (`makeGun(w,par,true)`). Modelos atuais: Glock-18, Desert Eagle, APX A1, Berettas Duplas, PP-19 Bizon, PMX, AK-47, AK-12, Fuzil tático e AWP. `rot` gira o modelo antes da normalização (a Glock vem com o comprimento em x). Glock, Desert Eagle, AWP e AK-47 (`ak47_counter_strike_2.glb`, de blazitt; o `ak47.glb` antigo não é mais usado) são CC BY 4.0, com créditos em `LICENCA.txt`. A Desert Eagle (460 mil triângulos, 30 MB) e a AK-47 (texturas de 30 MB) são pesadas, então convém trocar por uma versão low poly antes de publicar. As outras armas são procedurais. Para converter um FBX: `node assets/ferramentas/fbx2glb.js entrada.fbx saida.glb`. Com `?debug`, `__g.eqId('ak12')` equipa qualquer arma e `__g.MDL` + `__g.rebuild()` permitem ajustar ao vivo. **Licença:** os arquivos vieram do usuário sem licença registrada; confirme antes de publicar.
+- Braços do jogador (desktop com o soldado tático): seção "braços do jogador" em `game.js`. `makeVArms()` clona o soldado tático preso à câmera e deixa só `Gloves`/`Tops` visíveis. O tronco some com o osso `Spine` em escala 1e-3, compensada nos ombros com 1e3, e as mãos ficam em 0,75 (a mão do modelo mede 15 cm do pulso aos nós). A cada quadro, `viewArms()` lê a tabela `GRIP` (`p` pistola, `r` rifle/SMG, `k` faca; `R`/`L`):
+  - `o`: onde fica o nó do dedo médio, em relação a `hR`/`hL` (cabo/apoio, no espaço da arma);
+  - `f`/`t`: direções pulso→nós dos dedos e do polegar;
+  - `c`/`th`: dobra das falanges (eixo X local de cada osso de dedo);
+  - `tb`: fechamento do polegar (X negativo no `Thumb1` encosta o polegar na arma).
+  O pulso fica em `nó − f·tamanho_da_mão`, e `ikArm` faz IK de dois ossos até ele. Nas Berettas, a mão esquerda espelha `GRIP.p.R`. As mãos procedurais `hR`/`hL` continuam calculadas (alvos e recarga), mas com os materiais `gl`/`sl` invisíveis.
+  - Para ajustar: abra com `?debug` e use `await __g.ver('apx',[x,y,w,h])`, que equipa, congela os inimigos e amplia uma região da tela (frações). `__g.lupa()` volta ao normal e `__g.GRIP` muda ao vivo.
+- Mãos em primeira pessoa: `makeHand()` (palma, 4 dedos, polegar e punho da luva; a esquerda espelhada com `scale.x=-1`). `makeGun()` devolve `grip`/`gRot` (cabo) e `fore`/`fRot` (guarda-mão, telha ou apoio da pistola), e `buildGun()` encaixa as mãos nesses pontos. Pistolas usam as duas mãos e as Berettas, uma em cada arma. Os antebraços (`fR`/`fL`) são recalculados por `arms()` do pulso até os cotovelos fixos `ER`/`EL`, que ficam fora da tela. Não ponha o cotovelo perto da câmera: o braço vira uma barra. `VMY` sobe as pistolas para as mãos aparecerem.
+- Soldado russo (padrão no desktop): `assets/russo.glb` (corpo do `Russian_Soldier1.fbx`, personagem Mixamo, + as 6 animações de fuzil do soldado tático) e texturas em `assets/russo/Packed{0,1,2}_{Diffuse,Normal}.png`, extraídas do próprio FBX. Para gerar de novo: `node assets/ferramentas/export.js assets/origem assets/russo.glb assets/origem/Russian_Soldier1.fbx` (o 3º argumento troca o corpo; a lista `ANIMS` do script diz qual FBX vira cada clipe; o script descarta trilhas de ossos que o personagem não tem, porque o russo não tem anelar nem mindinho e o GLTFExporter jogaria fora o clipe inteiro). `prepMixamo(gl,'assets/russo/')` aplica as texturas pelo nome do material (`PackedMaterialNmat`), esconde os cílios (`default`) e transforma o chapéu (`Hats`) numa peça rígida presa à cabeça, que voa no headshot. Os braços do jogador (`makeVArms`) usam o mesmo boneco. Animações (`prepMixamo` → `SOLD.S`, pesos no laço dos inimigos; os pesos das pernas somam 1): `idle`/`walk` pela velocidade; `back` (Run Backward) quando recua (perto de menos de 5 m); `crouch` (Rifle Crouch Walk) em trechos aleatórios de 2–6 s, a 55% da velocidade; `stop` (Rifle Run To Stop) uma vez ao chegar correndo a 9 m; `hit` (Hit Reaction, só tronco, 1,6×) ao levar tiro; `fire` (só tronco) a cada tiro. Ordem de carga: russo → tático → Quaternius.
+- Soldado tático (reserva): `assets/tatico.glb`, gerado de FBX da Mixamo (personagem "Tactical Man 1" de LokitoBlu, CC BY 4.0 — crédito obrigatório) por `node assets/ferramentas/export.js assets/origem assets/tatico.glb` (precisa dos scripts r128 three.min.js, fflate.min.js, NURBSUtils.js, NURBSCurve.js, FBXLoader.js, GLTFExporter.js na mesma pasta do script). `prepMixamo()`: escala .01 (cm), cor por peça (sem texturas), capacete no lugar do boné, caixas de acerto e fuzil nos ossos `mixamorig*`. Animações de corpo inteiro: `idle`/`run` misturadas pela velocidade e `fire` (só tronco) a cada tiro. `SOLD.RB`/`SOLD.RBONES` dão o mapa de ossos do ragdoll para cada tipo. Se `tatico.glb` falhar, e sempre no celular (mais leve), usa o soldado da Quaternius abaixo.
+- Soldados Quaternius: `assets/soldado.gltf`+`.bin` (Superhero_Male da Quaternius, sem texturas) e `assets/animacoes.glb` (6 clipes da Universal Animation Library, mesmo esqueleto), ambos CC0 (`assets/LICENCA.txt`). Carregados por `loadSoldier()`/`prepSoldier()` com GLTFLoader + SkeletonUtils (addons r128). Detalhes:
+  - Farda: textura camuflada; balaclava, luvas e botas são escurecidas no shader pela posição de repouso do vértice (`vB`).
+  - Equipamento (capacete, óculos, colete, mochila, cinto, joelheiras, botas) e o fuzil (na mão direita, na pose de mira) ficam presos aos ossos.
+  - Acertos: caixas invisíveis presas aos ossos. Raycast em SkinnedMesh usaria a pose de repouso, por isso não serve.
+  - Animação: as pernas misturam `Jog_Fwd_Loop` e `Idle_Loop` conforme a velocidade; o tronco fica sempre em `Pistol_Aim_Neutral` (clipes filtrados por osso com `UPPER`).
+  - Ragdoll: as mesmas partículas, com os ossos de `RBONES` seguindo cada par (mundo → local do pai em `poseRag`).
+  - Para gerar os assets de novo a partir dos .zip da Quaternius: `python assets/ferramentas/prep_assets.py <pasta com dl_ubc/ubc.zip e dl_ual/ual.zip> assets` (os .zip são as versões Standard gratuitas do itch.io).
+- Soldado procedural (reserva): `makeSoldier()` com articulações em `e.j` (quadril, joelho, ombro, cotovelo, tronco, cabeça), geometrias `EG` e materiais `EM` compartilhados, sem vazamento por onda. Morte: ragdoll Verlet sem biblioteca (seção "ragdoll" em `game.js`). As juntas viram partículas (`RJ`) com restrições de distância: tronco e cabeça rígidos (`RIGID`), membros articulados (`LINKS`) e limites que impedem dobrar demais (`MINL`). Cada parte do corpo (`BONES`) segue o seu par de partículas via `rFrame()`. `kill(e,hs,dir,pt,force)` aplica o impulso: tiro na direção da bala (mais forte perto do ponto atingido e quanto maior o dano), granada para fora da explosão. O corpo colide com chão (com atrito), caixas e paredes; o fuzil cai solto (`drops`). Física por 4 s, depois afunda e some aos 5,5 s.
+- Recarga animada (seção "recarga animada" em `game.js`): `reloadPose(p)` recebe o progresso de 0 a 1 e move a arma, a mão esquerda (`hL`, com o antebraço `fL` junto) e os pentes (`mags`, com a posição de repouso em `userData.rest`). Etapas: inclina (0–.14) → solta o pente, que vira `drops` e cai no chão (.14–.26) → a mão desce e volta com o pente novo (.22–.58) → encaixa (.58–.68) → engatilha se a arma estava vazia (.76) → volta (.86–1). Espingardas carregam cartucho por cartucho. Sons em `clk()`. `restPose()` volta tudo ao normal fora da recarga.
+- Debug da recarga: com `?debug`, `__g.relAt(.5)` congela a recarga em 50% e `__g.relGo()` solta.
+- Headshot fatal: o capacete vira uma malha solta no mundo (lista `drops`), voa para longe do jogador e fica no chão. Não use `clone()` em partes de inimigo: `userData.owner` é circular e o `clone()` trava.
+- Headshot: `hsFx()` mostra `#hsb` (ícone + "HEADSHOT") abaixo da mira em qualquer acerto na cabeça.
+- `?debug` na URL expõe `window.__g` (inclui `god(true)` para não tomar dano) (cena, inimigos, `hsFx`, `kill`) para inspeção no console.
+- Salvamento em `localStorage`, chave `arenafps_v1`. Se mudar o formato, trate saves antigos em `loadSave()`.
+
+## Armas
+Definidas na tabela `WP` em `game.js` (seção "armas"). Cada linha: id, nome, categoria (p/i/r), slot, preço, dano, intervalo, pente, reserva, recarga, dispersão, automática, projéteis, geometria, volume do som, mira, duas armas.
+- Slot 1: primária (intermediárias e rifles). Slot 2: pistolas. Slot 3: faca.
+- Só ficam no jogo as armas com modelo 3D em `MDL` (mais a faca). O laço logo antes de `loadWeapons()` apaga as outras linhas de `WP`. Inventário inicial (`startKit()`): só Glock-18 (slot 2) e faca (slot 3), slot 1 vazio. Ele volta em toda partida que começa da onda 1 ("Novo jogo", "Jogar" ou "Jogar de novo" depois de morrer; `reset()` chama `startKit()` quando não é "Continuar"). "Continuar" mantém o inventário do save. Na loja cada arma custa o preço da tabela `WP` (Glock $0, Berettas $300, APX $450, Desert Eagle $700, Bizon $1400, PMX $1700, AK-47 $2500, AK-12 $2900, Fuzil tático $3200, AWP $4750) e entra no inventário ao ser comprada. Para trazer uma arma de volta, dê um modelo a ela em `MDL`.
+- Loja: tecla **B** abre de qualquer tela (título, pausa, jogo); B de novo fecha e volta ao jogo. No desktop há o botão `#bInv` ("B Loja") abaixo da barra de vida; no celular, o botão `#bS`. Os cards das armas mostram a foto do modelo 3D: `wIcon(id)` renderiza o `MDL[id].tpl` de lado (cano para a direita) num `WebGLRenderer` pequeno separado e guarda o dataURL em `ICONS`. A faca e os equipamentos usam os ícones de canvas.
+- `index.html` carrega `style.css` e `game.js` com `?v=Date.now()` para o navegador nunca usar versões antigas do cache.
+- Teclas: 1/2/3 trocam de arma, R recarrega, G lança granada, B abre a loja.
+
+## Equipamento
+Lista `ITEMS` em `game.js` (logo após `renderShop`), seção "Equipamento" da loja.
+- Colete ($650): `armor` até 100, absorve metade do dano em `hurt()`. Perdido ao morrer.
+- Granada ($300, máx. `GMAX`=3): `throwGren()` / `updateGrens()` / `explode()`, raio `GR`=6, dano até 110 nos inimigos e até 50 no jogador.
+- `armor` e `gren` ficam no save (saves antigos carregam como 0).
+
+## Itens no mapa
+Seção "itens no mapa" em `game.js`. Em cada onda, `spawnPickups()` sorteia pontos de `PICK_PTS` e coloca 2 caixas de munição e 1 kit médico, com +1 kit a cada 3 ondas. Os itens da onda anterior somem. `updatePickups()` coleta num raio de 1 m:
+- munição (`giveAmmo()`): +2 pentes de reserva na arma da mão e +1 nas outras, até o máximo;
+- kit: +40 de vida, só se a vida não estiver cheia.
+Cada item só some se tiver sido útil. O aviso aparece em `#pick` via `pickFx()`.
+
+## Ideias pendentes
+- Tipos diferentes de inimigos.
