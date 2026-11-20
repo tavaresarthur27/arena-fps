@@ -63,7 +63,7 @@ Definidas na tabela `WP` em `game.js` (seção "armas"). Cada linha: id, nome, c
 ## Equipamento
 Lista `ITEMS` em `game.js` (logo após `renderShop`), seção "Equipamento" da loja.
 - Colete ($650): `armor` até 100, absorve metade do dano em `hurt()`. Perdido ao morrer.
-- Granada ($300, máx. `GMAX`=3): `throwGren()` / `updateGrens()` / `explode()`, raio `GR`=6, dano até 110 nos inimigos e até 50 no jogador.
+- Granada ($300, máx. `GMAX`=3): `throwGren()` / `updateGrens()` / `explode()`, raio `GR`=6, dano até 110 nos inimigos e até 50 no jogador. Modelo `assets/armas/grenade.glb` (carregado em `loadWeapons()`, normalizado para 14 cm em `GTPL`; sem ele, esfera). Explosão em `explodeFx()`/`updateXfx()` (lista `xfx`): clarão, bola de fogo aditiva, onda de choque no chão, faíscas, fumaça que dura 3–5 s, marca queimada por 14 s, luz `xLight` fixa (luz nova recompilaria os shaders) e tremor de câmera `shk` pela distância. Licença do `grenade.glb` (veio do Sketchfab) não registrada: confirme antes de publicar.
 - `armor` e `gren` ficam no save (saves antigos carregam como 0).
 
 ## Itens no mapa
