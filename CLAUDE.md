@@ -52,7 +52,7 @@ Rode `python3 -m http.server 8000` e acesse http://localhost:8000 (precisa de in
 - Debug da recarga: com `?debug`, `__g.relAt(.5)` congela a recarga em 50% e `__g.relGo()` solta.
 - Headshot fatal: o capacete vira uma malha solta no mundo (lista `drops`), voa para longe do jogador e fica no chão. Não use `clone()` em partes de inimigo: `userData.owner` é circular e o `clone()` trava.
 - Sangue (seção "sangue" em `game.js`, antes de `makeFlash()`): `bloodFx(ponto,direção,k)` solta 2 nuvens de névoa (sprites `TX_SMOKE` vermelho-escuros) na direção da bala e gotas (`DROP_M`, planos de frente para a câmera esticados pela velocidade) que caem e, ao tocar o chão, viram manchas (`splat()`, 3 texturas de poça com raios e respingos, máx. 40, somem de 20 a 25 s). `k`: 1 no tiro (1,6 em armas com dano > 60), 2,5 no headshot fatal; `kill()` deixa uma poça onde o corpo cai. `BC` compensa a exposição do `grade` com `PP`. Com `?debug`, `__g.bloodFx`/`__g.splat` disparam o efeito.
-- Headshot: `hsFx()` mostra `#hsb` (ícone + "HEADSHOT") abaixo da mira em qualquer acerto na cabeça.
+- Headshot: `hsFx()` mostra `#hsb` (ícone SVG de caveira com furo de bala na testa, rachaduras e um fio de sangue, em `index.html` + "HEADSHOT") abaixo da mira em qualquer acerto na cabeça.
 - `?debug` na URL expõe `window.__g` (inclui `god(true)` para não tomar dano) (cena, inimigos, `hsFx`, `kill`) para inspeção no console.
 - Salvamento em `localStorage`, chave `arenafps_v1`. Se mudar o formato, trate saves antigos em `loadSave()`.
 
