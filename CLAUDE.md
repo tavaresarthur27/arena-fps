@@ -22,6 +22,8 @@ Rode `python3 -m http.server 8000` e acesse http://localhost:8000 (precisa de in
 - Desktop: pós-processamento (`PP`) em HDR half-float → UnrealBloom leve → shader `grade` (tonemapping ACES, sRGB, cor, vinheta, grão) → FXAA. Com `PP` o renderer fica sem tonemapping/sRGB, senão é aplicado duas vezes. `?pp=0` na URL desliga.
 - Celular: sem pós-processamento; o renderer faz ACES + sRGB (exposição .3).
 - Texturas procedurais em canvas com mapa normal gerado da própria imagem (`mat()`, `normalOf()`); `fitUV()` repete a textura por tamanho da caixa sem esticar.
+- Chão "assado" (logo depois das caixas em `game.js`): uma textura de canvas para o chão inteiro (`uv2`) com oclusão junto às paredes e caixas (retângulos desfocados com `shadowBlur`) e manchas grandes. Ela é o `aoMap` do `floorM` e também escurece a cor via `onBeforeCompile`. Se mudar as caixas, a textura acompanha (lê `boxes`).
+- Cidade em volta: prédios em anel (62–142 m, fachada `facM` com uma janela a cada 3 m, 5 cores) e um chão de 360 m, sem colisão nem sombra, apagados pela névoa. Celular usa menos prédios.
 - Ao ajustar brilho, mexa em `exposure` do `grade` e em `toneMappingExposure` juntos.
 - O disco do sol do Sky é desligado (`uDisk`=0) enquanto o PMREM é gerado; senão a luz ambiente fica forte demais.
 - Materiais escuros (armas, luvas, soldados) usam `envMapIntensity` baixo (.12–.3): com o céu como ambiente, valores altos deixam tudo cinza-claro.
