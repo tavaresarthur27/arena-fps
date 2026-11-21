@@ -56,6 +56,14 @@ body.touch .btn{display:block}
 .bar.arm{height:16px;margin-top:6px;border-color:#9fb3c8}.bar.arm i{background:linear-gradient(90deg,#5d6d82,#9fb3c8)}.bar.arm span{font-size:11px}
 #gn{font-size:13px;font-weight:700;color:var(--warm)}
 #bG{right:calc(34px + env(safe-area-inset-right,0px));bottom:calc(196px + env(safe-area-inset-bottom,0px));width:56px;height:56px;font-size:11px}
+#bZ{right:calc(100px + env(safe-area-inset-right,0px));bottom:calc(196px + env(safe-area-inset-bottom,0px));width:56px;height:56px;font-size:11px}
+/* luneta: preto fora do círculo, lente levemente escurecida na borda, retículo fino com traços grossos nas pontas */
+#scope{position:absolute;inset:0;display:none;pointer-events:none;background:radial-gradient(circle at 50% 50%,transparent 0,transparent calc(min(46vw,46vh) - 10px),rgba(0,0,0,.55) calc(min(46vw,46vh) - 2px),#000 min(46vw,46vh))}
+#scope.on{display:block}
+#scope:before,#scope:after{content:"";position:absolute;left:50%;top:50%;background:#000;transform:translate(-50%,-50%)}
+#scope:before{width:min(92vw,92vh);height:1px;background:linear-gradient(90deg,#000 0 30%,rgba(0,0,0,.9) 30% 70%,#000 70%);box-shadow:0 0 0 .5px #000}
+#scope:after{height:min(92vw,92vh);width:1px;background:linear-gradient(#000 0 30%,rgba(0,0,0,.9) 30% 70%,#000 70%)}
+#scope i{position:absolute;left:50%;top:50%;width:min(92vw,92vh);height:min(92vw,92vh);transform:translate(-50%,-50%);background:linear-gradient(#000,#000) 0 50%/30% 3px no-repeat,linear-gradient(#000,#000) 100% 50%/30% 3px no-repeat,linear-gradient(#000,#000) 50% 0/3px 30% no-repeat,linear-gradient(#000,#000) 50% 100%/3px 30% no-repeat}
 body.pp #vig{display:none}
 #pick{position:absolute;left:50%;bottom:calc(22% + env(safe-area-inset-bottom,0px));transform:translateX(-50%);font-weight:800;font-size:18px;letter-spacing:.06em;text-shadow:0 0 8px rgba(0,0,0,.9);opacity:0;pointer-events:none}
 #pick.on{animation:pickUp 1.3s ease-out forwards}
