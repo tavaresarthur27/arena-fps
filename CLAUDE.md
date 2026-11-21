@@ -21,6 +21,7 @@ Rode `python3 -m http.server 8000` e acesse http://localhost:8000 (precisa de in
 - Céu físico `THREE.Sky` também gera a luz ambiente/reflexos (`scene.environment` via PMREM). Sol `DirectionalLight` na mesma direção (`SUN`).
 - Desktop: pós-processamento (`PP`) em HDR half-float → UnrealBloom leve → shader `grade` (tonemapping ACES, sRGB, cor, vinheta, grão) → FXAA. Com `PP` o renderer fica sem tonemapping/sRGB, senão é aplicado duas vezes. `?pp=0` na URL desliga.
 - Celular: sem pós-processamento; o renderer faz ACES + sRGB (exposição .3).
+- Proporção da tela: em paisagem a câmera usa fov vertical 75. Em retrato o `onResize` mantém o campo horizontal (fov vertical até 110) e `VMP` desce e centraliza a arma (tablets em retrato). Em celular com retrato estreito (largura/altura < 0,7), `#rot` (só CSS, último elemento do `body`, senão o `#ov` cobre) pede para girar, e o jogo pausa.
 - Texturas procedurais em canvas com mapa normal gerado da própria imagem (`mat()`, `normalOf()`); `fitUV()` repete a textura por tamanho da caixa sem esticar.
 - Chão "assado" (logo depois das caixas em `game.js`): uma textura de canvas para o chão inteiro (`uv2`) com oclusão junto às paredes e caixas (retângulos desfocados com `shadowBlur`) e manchas grandes. Ela é o `aoMap` do `floorM` e também escurece a cor via `onBeforeCompile`. Se mudar as caixas, a textura acompanha (lê `boxes`).
 - Cidade em volta: prédios em anel (62–142 m, fachada `facM` com uma janela a cada 3 m, 5 cores) e um chão de 360 m, sem colisão nem sombra, apagados pela névoa. Celular usa menos prédios.
