@@ -786,7 +786,7 @@ function setBody(v,boot){BODY=v;try{localStorage.setItem('arenafps_cam',v?'1':'0
   if(bcPass)bcPass.enabled=v;document.body.classList.toggle('bodycam',v);$('camb').textContent='Modo bodycam: '+(v?'ligado':'desligado');onResize()}
 function showTitle(){
   wantCont=contW>0;
-  show('Arena FPS','Dinheiro $'+money+(bestW?'  |  Melhor onda '+bestW:''),wantCont?'Continuar (onda '+(contW+1)+')':'Jogar',['newb','shopb']);
+  show('Arena FPS','Dinheiro $'+money+(bestW?'  |  Melhor onda '+bestW:'')+(location.protocol==='file:'?'  |  Aberto direto do arquivo: soldados e armas 3D não carregam. Abra pelo jogar.bat.':''),wantCont?'Continuar (onda '+(contW+1)+')':'Jogar',['newb','shopb']);
 }
 let alive=false,playing=false,paused=false,needReset=true,reloading=false,rt=0,cool=0,kick=0,flashT=0,hmT=0,dmgA=0,bobT=0;
 const enemies=[],shots=[];

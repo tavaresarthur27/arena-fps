@@ -10,7 +10,7 @@ Jogo de tiro em primeira pessoa 3D para navegador. Sobreviva a ondas de soldados
   cena, estado, armas, som, inimigos, jogador, atualização, entrada (teclado/mouse e toque), menu e laço.
 
 ## Como rodar
-Rode `python3 -m http.server 8000` e acesse http://localhost:8000 (precisa de internet para o three.js). Abrindo o `index.html` direto (file://), o modelo 3D dos soldados não carrega e o jogo usa o soldado procedural.
+No Windows, dê dois cliques em `jogar.bat` (sobe `python -m http.server 8000` na pasta e abre http://localhost:8000; fechar a janela desliga). Ou rode `python3 -m http.server 8000` e acesse http://localhost:8000 (precisa de internet para o three.js). Abrindo o `index.html` direto (file://), soldados, braços e armas 3D não carregam (o jogo usa os procedurais) e o menu avisa para usar o `jogar.bat`.
 
 ## Regras do projeto
 - Responda e escreva textos do jogo em português do Brasil.
